@@ -77,7 +77,7 @@ class MyMQTTClass(mqtt.Client):
                     self.sub_list = self.mqtt_sql.get_mqtt_topics_sub()
                     self.mqtt_sql.exit_from_db()
                     for topic, value in self.pub_list:
-                        self.publish(str(topic), str(value))
+                        self.publish(f'{self.user_data}/{str(topic)}', str(value))
                         time.sleep(0.01)
                     for topic in self.sub_list:
                         if topic[1] != '':
