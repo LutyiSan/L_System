@@ -14,11 +14,11 @@ class MyBot:
                                       port=data_base['port'],
                                       db_name=data_base['db_name'])
         self.TOKEN = self.bot_sql.get_bot_token()[0][0]
-        logger.info("Токен Бота", self.TOKEN)
+        logger.info("Bots TOKEN is:  ", self.TOKEN)
         self.data_list = list()
         if self.TOKEN is None:
             self.bot_sql.exit_from_db()
-            logger.debug("TOKEN неизвестен")
+            logger.debug("TOKEN unknown")
         else:
             self.bot_sql.exit_from_db()
             logger.info("TOKEN is ready")
@@ -37,27 +37,12 @@ class MyBot:
             self.value = value
             self.data_list.append(f'{self.tag}:  {self.value}')
 
-    def alarm_data(self):
-        self.bot_sql = SQL()
-        self.bot_sql.connection_to_db(user=data_base['user'],
-                                      password=data_base['password'],
-                                      host=data_base['host'],
-                                      port=data_base['port'],
-                                      db_name=data_base['db_name'])
-        self.data_for_send = self.bot_sql.get_alarms()
-        self.bot_sql.exit_from_db()
-        for signal_id, desc, value in self.data_for_send:
-            self.signal_id = signal_id
-            self.description = desc
-            self.present_value = value
-            self.data_list.append(f'ALARM! {self.description}:  {self.signal_id}  {self.present_value}')
-
     def run_bot(self):
         self.bot = telebot.TeleBot(self.TOKEN)
         try:
             self.bot.send_message(data_bot['chat_id'], "Let's Rock!!!")
         except Exception as ex:
-            logger.debug("cannot receive message", ex)
+            logger.debug(f"cannot receive message to chat {data_bot['chat_id']}", ex)
 
         @self.bot.message_handler(commands=['start'])
         def start_message(message):
@@ -88,4 +73,4 @@ while True:
         activate_bot = MyBot()
         activate_bot.run_bot()
     except Exception as e:
-        logger.exception('Disconnecting', e)
+        logger.exception(' FAIL Disconnected from telegram', e)

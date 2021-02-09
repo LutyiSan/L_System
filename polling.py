@@ -7,13 +7,13 @@ from config_scada import data_base
 
 class RunTime:
     def __init__(self):
-        logger.add("logs/polling.log", format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", rotation="1MB")
+        logger.add("logs/polling.log", format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", rotation="10MB")
         self.modbus_client = None
         self.connect_state = 0
         self.scada_db = SQL()
         self.device_list = list()
         self.signal_list = list()
-        
+
     def get_config(self):
         self.scada_db.connection_to_db(user=data_base['user'],
                                        password=data_base['password'],
@@ -46,7 +46,6 @@ class RunTime:
                     self.connect_state = self.modbus_client.connect()
                     if self.connect_state == 1:
                         for signal in self.signal_list:
-                            print(signal)
                             self.s_device_id = signal[1]
                             self.signal_id = signal[0]
                             self.reg_address = signal[8]
@@ -65,15 +64,13 @@ class RunTime:
                                                            self.bit_string,
                                                            self.word_number, self.bit_number)
                             else:
-                                logger.info("Next device")
-
-
+                                logger.info("Switching to Next device for polling")
                     else:
                         logger.debug(f"Connection to device {self.device_id} lost")
                     self.modbus_client.disconnect()
                 else:  # ЗДЕСЬ МОГУТ БЫТЬ И ДРУГИЕ ПРОТОКОЛЫ
                     logger.debug("Unknown protocol...")
-                    time.sleep(30)
+                time.sleep(1)
 
 
 activate_polling = RunTime()

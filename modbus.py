@@ -27,6 +27,8 @@ class ModbusDriver:
         self.retry = 5
         self.status_flag = 'fault'
         self.connect_state = False
+        self.ip = ip_address
+        self.unit_id = unit_id
 
     def connect(self):
         if self.protocol == "modbusTCP":
@@ -38,16 +40,16 @@ class ModbusDriver:
                     self.modbus_tcp_client.connect()
                     self.connect_state = True
                 except Exception as e:
-                    logger.debug('No answer from device', e)
+                    logger.debug(f'No answer from device {self.ip} trying: {self.retry}', e)
                     try:
                         self.modbus_tcp_client.close()
                     except Exception as e:
-                        logger.debug('None connection to device', e)
+                        logger.debug(f'None connection to device {self.ip}', e)
                     time.sleep(0.5)
             if not self.connect_state:
-                logger.info('Cannot connecting to device')
+                logger.info(f'Cannot connecting to device {self.ip}')
             else:
-                print(" ModbusTCP READY")
+                logger.info(f"ModbusTCP connecting to {self.ip} READY")
                 self.modbus_client = self.modbus_tcp_client
         elif self.protocol == "modbusRTU":
             self.connect_state = False
@@ -57,16 +59,16 @@ class ModbusDriver:
                     self.modbus_rtu_client.connect()
                     self.connect_state = True
                 except Exception as e:
-                    print(e, 'No answer from device')
+                    logger.info(f'No answer from device id: {self.unit_id} trying: {self.retry}', e)
                     try:
                         self.modbus_rtu_client.close()
                     except Exception as e:
-                        print(e, 'None connection to device')
+                        logger.info(f'No answer from device id: {self.unit_id} trying: {self.retry}', e)
                     time.sleep(0.5)
             if not self.connect_state:
-                logger.info('Cannot connecting to device')
+                logger.info(f'Cannot connecting to device id: {self.unit_id}')
             else:
-                logger.info(" ModbusRTU READY")
+                logger.info(f"ModbusTCP connecting device id: {self.unit_id} READY")
                 self.modbus_client = self.modbus_rtu_client
         return self.connect_state
 
@@ -78,12 +80,10 @@ class ModbusDriver:
             try:
                 if reg_type == "holding":
                     self.read_data = self.modbus_client.read_holdingregisters(reg_address, quantity)
-                    print(self.read_data)
                     if word_number is not None:
                         self.save_data = self.read_data[word_number]
                     else:
                         self.save_data_fin = self.read_data[0]
-                        print(self.read_data)
                         if bit_number is not None and bit_string == "normal":
                             self.save_data_bin = bin(self.save_data)
                             self.save_data_fin = self.save_data_bin[bit_number + 2]
@@ -135,20 +135,20 @@ class ModbusDriver:
                         else:
                             pass
 
-                elif reg_type == "holding" and device_type == "float":
+                elif reg_type == "holding" and server_type == "float":
                     self.read_data = convert_registers_to_float(
                         self.modbus_client.read_holdingregisters(reg_address, quantity))
                     self.save_float_data = self.read_data[0]
                     self.save_data_fin = self.save_float_data
 
-                elif reg_type == "input" and device_type == "float":
+                elif reg_type == "input" and server_type == "float":
                     self.read_data = convert_registers_to_float(
                         self.modbus_client.read_holdingregisters(reg_address, quantity))
                     self.save_float_data = self.read_data[0]
                     self.save_data_fin = self.save_float_data
 
                 else:
-                    logger.debug('Wrong request')
+                    logger.debug(f'Fail reading from register {reg_address}')
 
                 if server_type == 'int' or server_type == 'float' or server_type == 'uint':
                     self.server_data = str(self.save_data_fin / scale)
@@ -158,7 +158,7 @@ class ModbusDriver:
                     else:
                         self.server_data = 'inactive'
                 else:
-                    logger.debug('Wrong value type!!')
+                    logger.debug('Wrong value server_type!!')
 
                 # ЭТО ФУНКЦИЯ ДЛЯ СОХРАНЕНИЯ ДАННЫХ
                 self.status_flag = 'normal'
@@ -177,9 +177,9 @@ class ModbusDriver:
                                             host=data_base['host'],
                                             port=data_base['port'],
                                             db_name=data_base['db_name'])
-                sql_modbus.write_present_value('none','fault',str(signal_id))
+                sql_modbus.write_present_value('none', 'fault', str(signal_id))
                 sql_modbus.exit_from_db()
-                logger.debug("Fault reading", e)
+                logger.debug(f'Fail reading from register {reg_address}', e)
 
         else:
             try:
@@ -203,7 +203,7 @@ class ModbusDriver:
                     self.modbus_client.write_multiple_registers(reg_address, convert_float_to_two_registers(value_data))
 
                 else:
-                    print('Wrong request')
+                    logger.info('Wrong request for writing')
             except Exception as e:
                 logger.debug("Cannot write data to device", e)
 

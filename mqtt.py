@@ -35,10 +35,10 @@ class MyMQTTClass(mqtt.Client):
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
-            logger.info("Connection is ready")
+            logger.info("Connection to mqtt broker is ready")
             time.sleep(1)
         else:
-            logger.info("Connection FAULT")
+            logger.info("Connection to  mqtt broker FAULT")
 
     def on_message(self, client, userdata, message):
         time.sleep(0.11)
@@ -60,7 +60,7 @@ class MyMQTTClass(mqtt.Client):
                 self.connect(host=self.broker_address, port=self.port)
                 self.connect_state = True
             except Exception as ex:
-                logger.exception("None connecting to MQTT", ex)
+                logger.exception("None connection to MQTT broker", ex)
                 self.connect_state = False
                 time.sleep(1)
         if self.connect_state:

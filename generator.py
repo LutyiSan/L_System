@@ -1,12 +1,13 @@
 import random
 import time
+from loguru import logger
 from sql import SQL
 from config_scada import data_base
 
 
 class GEN:
     def __init__(self):
-
+        logger.add("logs/generator.log", format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", rotation="1MB")
         self.gen_sql = SQL()
         self.gen_sql.connection_to_db(user=data_base['user'],
                                       password=data_base['password'],
@@ -26,8 +27,8 @@ class GEN:
                     self.present_value = random.choice(['active', 'inactive'])
                 self.flag = random.choice(['normal', 'fault', 'alarm'])
                 self.gen_sql.write_present_value(self.present_value, self.flag, self.signal_id)
+            logger.info('generator post data to DB')
             time.sleep(5)
-
 
 activate_generator = GEN()
 activate_generator.run_gen()

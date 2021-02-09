@@ -37,58 +37,77 @@ class SQL:
                 self.connect_state = True
                 logger.info("Data Base is ready to use")
             except Exception as e:
-                logger.exception('None connection to Data Base', e)
+                logger.exception(f'None connection to Data Base {db_name}', e)
                 self.connect_state = False
                 sys.exit()
             time.sleep(0.5)
 
     def get_device_list(self):
-        self.cur.execute("SELECT * FROM device_list WHERE state = 'active' ")
-        for device in self.cur:
-            self.device_list.append(list(device))
-        return self.device_list
+        try:
+            self.cur.execute("SELECT * FROM device_list WHERE state = 'active' ")
+            for device in self.cur:
+                self.device_list.append(list(device))
+            return self.device_list
+        except Exception as e:
+            logger.debug("Cannot get_device_list", e)
 
     def get_signals_list(self):
-        self.cur.execute(
-            f"SELECT*FROM signals_list WHERE device_id = (SELECT device_id FROM device_list WHERE state = 'active') ")
-        for signal in self.cur:
-            self.signals_list.append(list(signal))
-        return self.signals_list
+        try:
+            self.cur.execute(
+                f"SELECT*FROM signals_list WHERE device_id = (SELECT device_id FROM device_list WHERE state = 'active') ")
+            for signal in self.cur:
+                self.signals_list.append(list(signal))
+            return self.signals_list
+        except Exception as e:
+            logger.debug("Cannot get_signals_list", e)
 
     def get_gen_signals_list(self):
-        self.cur.execute("SELECT signal_id, server_type FROM signals_list")
-        for lst in self.cur:
-            self.signals_list.append(list(lst))
-        return self.signals_list
+        try:
+            self.cur.execute("SELECT signal_id, server_type FROM signals_list")
+            for lst in self.cur:
+                self.signals_list.append(list(lst))
+            return self.signals_list
+        except Exception as e:
+            logger.debug("Cannot get_gen_signals_list", e)
 
     def get_mqtt_params(self):
-        self.cur.execute("SELECT ip_address, ip_port, user_name, password, mqtt_data_prefix FROM device_list WHERE "
-                         "protocol = 'mqtt'  ")
-        for mqtt in self.cur:
-            self.mqtt_device.append(mqtt)
-        return self.mqtt_device
+        try:
+            self.cur.execute("SELECT ip_address, ip_port, user_name, password, mqtt_data_prefix FROM device_list WHERE "
+                             "protocol = 'mqtt'  ")
+            for mqtt in self.cur:
+                self.mqtt_device.append(mqtt)
+            return self.mqtt_device
+        except Exception as e:
+            logger.debug("Cannot get_mqtt_params", e)
 
     def get_mqtt_topics_pub(self):
-        self.cur.execute("SELECT topic_pub, present_value FROM signals_list WHERE topic_pub is not NULL ")
-        for topic in self.cur:
-            self.mqtt_pub_list.append(topic)
-        return self.mqtt_pub_list
+        try:
+            self.cur.execute("SELECT topic_pub, present_value FROM signals_list WHERE topic_pub is not NULL ")
+            for topic in self.cur:
+                self.mqtt_pub_list.append(topic)
+            return self.mqtt_pub_list
+        except Exception as e:
+            logger.debug("Cannot get_mqtt_topics_pub", e)
 
     def get_mqtt_topics_sub(self):
-        self.cur.execute("SELECT signal_id, topic_sub, present_value FROM signals_list WHERE topic_sub is not NULL ")
-        for topic in self.cur:
-            self.mqtt_sub_list.append(topic)
-        return self.mqtt_sub_list
+        try:
+            self.cur.execute(
+                "SELECT signal_id, topic_sub, present_value FROM signals_list WHERE topic_sub is not NULL ")
+            for topic in self.cur:
+                self.mqtt_sub_list.append(topic)
+            return self.mqtt_sub_list
+        except Exception as e:
+            logger.debug("Cannot get_mqtt_topics_sub", e)
 
     def write_present_value(self, value, status_flag, signal_id):
         self.time_stamp = datetime.now()
         try:
             self.cur.execute(
                 f"UPDATE scada.signals_list set present_value = '{value}', status_flag='{status_flag}', time_stamp='{self.time_stamp}' WHERE signal_id = '{signal_id}'")
-            logger.info("Done")
+            logger.info("Done! writing value from modbus device to DB")
             self.connector.commit()
         except Exception as e:
-            logger.exception("Can't write to db", e)
+            logger.exception("Can't write value from modbus device to db", e)
 
     def write_present_value_mqtt(self, value, signal_id):
         self.time_stamp = datetime.now()
@@ -96,36 +115,28 @@ class SQL:
             self.cur.execute(
                 f"UPDATE `scada`.`signals_list` SET present_value='{value}', time_stamp ='{self.time_stamp}' WHERE   "
                 f"`signal_id`='{signal_id}' ")
-            logger.info("Done")
+            logger.info("Done! writing value from mqtt to DB")
             self.connector.commit()
         except Exception as e:
-            logger.exception("CAN'T WRITE TO DB", e)
+            logger.exception("CAN'T Done! writing value from mqtt to DB", e)
 
     def get_bot_token(self):
-        self.cur.execute("SELECT token FROM device_list WHERE protocol = 'telegram_bot' ")
-        for token in self.cur:
-            self.bot_tokens.append(list(token))
-        return self.bot_tokens
+        try:
+            self.cur.execute("SELECT token FROM device_list WHERE protocol = 'telegram_bot' ")
+            for token in self.cur:
+                self.bot_tokens.append(list(token))
+            return self.bot_tokens
+        except Exception as e:
+            logger.debug('Cannot get_bot_token', e)
 
     def get_data_send_bot(self):
-        self.cur.execute('SELECT description, present_value FROM signals_list')
-        for lst in self.cur:
-            self.bot_topics.append(lst)
-        return self.bot_topics
-
-
-
-    def write_command_to_device(self, signal_id):
-        self.cur.execute(
-            f"SELECT*FROM device_list WHERE device_id = (SELECT device_id FROM signals_list WHERE signal_id = '{signal_id}')")
-        for i in self.cur:
-            self.data_list.append(i)
-        self.cur.execute(f"SELECT*FROM signals_list WHERE  signal_id = '{signal_id}'")
-        for i in self.cur:
-            self.data_list.append(i)
-        return self.data_list
-
-
+        try:
+            self.cur.execute('SELECT description, present_value FROM signals_list')
+            for lst in self.cur:
+                self.bot_topics.append(lst)
+            return self.bot_topics
+        except Exception as e:
+            logger.debug('Cannot get_data_send_bot', e)
 
     def exit_from_db(self):
         self.connector.close()
