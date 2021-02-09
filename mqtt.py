@@ -33,25 +33,25 @@ class MyMQTTClass(mqtt.Client):
         logger.info(self.connect_params)
         time.sleep(1)
 
-    def on_connect(self, mqttc, userdata, flags, rc):
+    def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             logger.info("Connection is ready")
             time.sleep(1)
         else:
             logger.info("Connection FAULT")
 
-    def on_message(self, mqttc, userdata, message):
+    def on_message(self, client, userdata, message):
         time.sleep(0.11)
         self.write_value = str(message.payload.decode("utf-8"))
         logger.info("received message =", str(message.payload.decode("utf-8")))
 
-    def on_publish(self, mqttc, obj, mid):
+    def on_publish(self, client, obj, mid):
         logger.info("mid: " + str(mid))
 
-    def on_subscribe(self, mqttc, obj, mid, granted_qos):
+    def on_subscribe(self, client, obj, mid, granted_qos):
         logger.info("Subscribed: " + str(mid) + " " + str(granted_qos))
 
-    def on_log(self, mqttc, obj, level, string):
+    def on_log(self, client, obj, level, string):
         logger.info(string)
 
     def run(self):
