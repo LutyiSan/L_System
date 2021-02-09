@@ -2,6 +2,7 @@ from easymodbus.modbusClient import *
 import time
 from loguru import logger
 from sql import SQL
+from config_scada import data_base
 
 
 class ModbusDriver:
@@ -71,7 +72,7 @@ class ModbusDriver:
 
     # noinspection PyArgumentList
     def reading(self, reg_address, quantity, reg_type, signal_id,
-                scale, device_type, server_type, bit_string, word_number, bit_number):
+                scale, server_type, bit_string, word_number, bit_number):
         if self.connect_state:
             print(reg_address, quantity, reg_type)
             try:

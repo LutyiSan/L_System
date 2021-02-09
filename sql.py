@@ -56,7 +56,7 @@ class SQL:
         return self.signals_list
 
     def get_gen_signals_list(self):
-        self.cur.execute("SELECT signal_id, device_type FROM signals_list")
+        self.cur.execute("SELECT signal_id, server_type FROM signals_list")
         for lst in self.cur:
             self.signals_list.append(list(lst))
         return self.signals_list
@@ -113,12 +113,7 @@ class SQL:
             self.bot_topics.append(lst)
         return self.bot_topics
 
-    def get_kivy(self):
-        self.cur.execute("SELECT signal_id, present_value, status_flag, animation_class FROM signals_list where "
-                         "animation_class is not NULL ")
-        for element in self.cur:
-            self.vision_list.append(element)
-        return self.vision_list
+
 
     def write_command_to_device(self, signal_id):
         self.cur.execute(
@@ -130,12 +125,7 @@ class SQL:
             self.data_list.append(i)
         return self.data_list
 
-    def get_alarms(self):
-        self.cur.execute("SELECT signal_id, description, present_value FROM signals_list WHERE present_value IS NOT "
-                         "NULL and status_flag = 'alarm' ")
-        for alarm in self.cur:
-            self.alarm_list.append(list(alarm))
-        return self.alarm_list
+
 
     def exit_from_db(self):
         self.connector.close()

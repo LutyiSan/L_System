@@ -49,26 +49,24 @@ class RunTime:
                             print(signal)
                             self.s_device_id = signal[1]
                             self.signal_id = signal[0]
-                            self.signal_type = signal[3]
-                            self.reg_address = signal[9]
-                            self.reg_type = signal[10]
-                            self.quantity = signal[11]
-                            self.bit_string = signal[12]
-                            self.word_number = signal[13]
-                            self.bit_number = signal[14]
-                            self.device_type = signal[15]
-                            self.server_type = signal[16]
-                            self.scale = signal[17]
+                            self.reg_address = signal[8]
+                            self.reg_type = signal[9]
+                            self.quantity = signal[10]
+                            self.bit_string = signal[11]
+                            self.word_number = signal[12]
+                            self.bit_number = signal[13]
+                            self.server_type = signal[14]
+                            self.scale = signal[15]
 
                             if self.device_id == self.s_device_id:
                                 self.modbus_client.reading(self.reg_address, self.quantity, self.reg_type,
                                                            self.signal_id,
-                                                           self.scale, self.device_type, self.server_type,
+                                                           self.scale, self.server_type,
                                                            self.bit_string,
                                                            self.word_number, self.bit_number)
                             else:
                                 logger.info("Next device")
-                                break
+
 
                     else:
                         logger.debug(f"Connection to device {self.device_id} lost")

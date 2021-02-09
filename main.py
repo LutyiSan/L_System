@@ -5,16 +5,17 @@ import multiprocessing
 
 
 def run():
-    bot = subprocess.Popen([sys.executable, 'bot_v2.py'])
+    bot = subprocess.Popen([sys.executable, 'TeleBot.py'])
     time.sleep(5)  # Даем время серверу на запуск
-    mqtt = subprocess.Popen([sys.executable, 'mqtt_v2.py'])
+    mqtt = subprocess.Popen([sys.executable, 'mqtt.py'])
     time.sleep(5)
-    generator = subprocess.Popen([sys.executable, 'generator.py'])
+    # Использовать generator для тестирования передачи данных клиенту
+    #generator = subprocess.Popen([sys.executable, 'generator.py'])
     time.sleep(5)
     subprocess.Popen([sys.executable, 'polling.py'])
     bot.wait()
     mqtt.wait()
-    generator.wait()
+    # generator.wait()
 
 
 running1 = multiprocessing.Process(target=run)
